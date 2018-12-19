@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../jquery.min.js"></script>
+</head>
+<body>
+<script>
+	var URL = "http://exam.osvlabs.com/try" + '&callback=?';
+	var myToken = "ea18f2f70e9a0d7bdd60778d5a293247";
+
+	function detect(token, x, y, hasBeeped) {
+		var requestBody = "detector=" + myToken + "&x=" + x + "&y=" + y;
+		// var requestBody = {"detector": myToken, "x": x, "y": y};
+        console.log(requestBody);
+
+		$.ajax({
+			type: "PUT",
+			url: URL,
+			dataType:'jsonp',
+			data: requestBody,
+			success: function (data) {
+				console.log(data)
+				console.log("ssd")
+				if (hasBeeped) {
+					if (data === "deactivated") {
+						console.log("deactivated " + x + " " + y);
+					} else {
+						x1 = x + 1;
+						y1 = Math.round(Math.sqrt(400 - (x1 - xBeep) * (x1 - xBeep)) + yBeep);
+						detect(token, x1, y1, true);
+					}
+				} else {
+					switch (data) {
+						case "deactivated": // 炸弹在提供的坐标
+							console.log("deactivated " + x + " " + y);
+							break;
+						case "beep": // 炸弹在有效半径内
+							console.log("beep " + x + " " + y);
+							xBeep = x;
+							yBeep = y;
+							x1 = x - 20;
+							y1 = Math.sqrt(400 - (x1 - x) * (x1 - x)) + y; //其实也等于y // 圆的方程是(x1-x)2+(y1-y)2= 400
+							detect(token, x1, y1, true);
+							break;
+						case "exploded": // 超时爆炸
+							console.log("exploded");
+							break;
+						default: // 未探测到
+							if (x === 20 && y < 100) {
+								y = y + 1;
+								detect(token, x, y);
+							}
+							if (x === 20 && y === 100) {
+								x = 60;
+								y = -20;
+								detect(token, x, y);
+							}
+							if (x === 60 && y < 100) {
+								y = y + 1;
+								detect(token, x, y);
+							}
+							if (x === 60 && y === 100) {
+								x = 100;
+								y = -20;
+								detect(token, x, y);
+							}
+							if (x === 100 && y < 100) {
+								y = y + 1;
+								detect(token, x, y);
+							}
+					}
+				}
+			}
+		});
+	}
+
+	detect(myToken, 20, -20);
+
+</script>
+</body>
+</html>

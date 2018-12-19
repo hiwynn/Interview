@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../jquery.min.js"></script>
+</head>
+<body>
+<script>
+	var URL = "http://exam.osvlabs.com/";
+
+	var myToken = "978fb0e9d242e69cf7fba661a4fd8ad8";
+	var x1, y1;
+
+
+	var xBeep, yBeep;
+	var data;
+	var ceil = false;
+	var floor = false;
+
+
+	function detect(token, x, y, hasBeeped) {
+
+		// var x0 = 3, y0 = 1; //假设炸弹坐标
+		var x0 = 3, y0 = 1; //假设炸弹坐标
+
+		if (x === x0 && y === y0) {
+			data = "deactivated";
+		} else if (Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0)) <= 20) { // 炸弹坐标与圆心之间的距离
+			data = "beep";
+		} else {
+			if (!data) {
+				data = null;
+			}
+		}
+
+
+		if (hasBeeped) {
+			if (data === "deactivated") {
+				console.log("deactivated " + x + " " + y);
+			} else {
+				if (ceil === false && floor === false) {
+					x1 = x + 1;
+				}
+				if (!ceil) {
+					ceil = true;
+					y1 = Math.ceil(Math.sqrt(400 - (x1 - xBeep) * (x1 - xBeep)) + yBeep);
+					console.log(x1 + " " + y1);
+					detect(token, x1, y1, true);
+				} else if (!floor) {
+					floor = true;
+					y1 = Math.floor(Math.sqrt(400 - (x1 - xBeep) * (x1 - xBeep)) + yBeep);
+					console.log(x1 + " " + y1);
+					detect(token, x1, y1, true);
+				} else {
+					ceil = false;
+					floor = false;
+					detect(token, x1, 0, true);
+				}
+			}
+		} else {
+			switch (data) {
+				case "deactivated": // 炸弹在提供的坐标
+					console.log("deactivated " + x + " " + y);
+					break;
+				case "beep": // 炸弹在有效半径内
+					console.log("beep " + x + " " + y);
+					xBeep = x;
+					yBeep = y;
+					x1 = x - 20;
+					y1 = Math.sqrt(400 - (x1 - x) * (x1 - x)) + y; //其实也等于y // 圆的方程是(x1-x)2+(y1-y)2= 400
+					console.log("beep " + x1 + " " + y1);
+					detect(token, x1, y1, true);
+					break;
+				case "exploded": // 超时爆炸
+					console.log("exploded");
+					break;
+				default: // 未探测到
+					if (x === 20 && y < 100) {
+						y = y + 1;
+						detect(token, x, y);
+					}
+					if (x === 20 && y === 100) {
+						x = 60;
+						y = -20;
+						detect(token, x, y);
+					}
+					if (x === 60 && y < 100) {
+						y = y + 1;
+						detect(token, x, y);
+					}
+					if (x === 60 && y === 100) {
+						x = 100;
+						y = -20;
+						detect(token, x, y);
+					}
+					if (x === 100 && y < 100) {
+						y = y + 1;
+						detect(token, x, y);
+					}
+			}
+		}
+	}
+
+	detect(myToken, 20, -20);
+
+</script>
+</body>
+</html>
